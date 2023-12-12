@@ -87,7 +87,7 @@ class Engine:
         return aggregated_graph
 
     def performance_comparison(self):
-        # Define test conditions
+        # Define test conditions 1 
         entity_conditions = ["category = 'Comedy'", "views > 1000"]
         ranged_category, min_duration, max_duration = 'Comedy', 100, 500
         community_conditions = "category = 'Comedy'"
