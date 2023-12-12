@@ -36,73 +36,73 @@ class Graph:
         plt.show()
 
 
-    def show_subgraph(self, root_video_id = 'C0f2dHJ6A18',root_label='Root', labels_show = True, undirected = True, node_size = 100, radius = 3):
-
-        radius = radius
+    def show_subgraph(self, root_video_id='C0f2dHJ6A18', root_label='Root', labels_show=True, undirected=True, node_size=100, radius=3):
         subgraph = nx.ego_graph(self.G, root_video_id, radius=radius, undirected=undirected)
-
-        # Use the spring_layout algorithm to position nodes
         pos = nx.spring_layout(self.G, seed=42)
-
-        # Calculate the degrees of each node in the subgraph
         node_degrees = dict(subgraph.degree)
-
-
-        # Your code to generate the subgraph and calculate node degrees
-
-        # Create a colormap based on node degrees
         degree_values = list(node_degrees.values())
         degree_min = min(degree_values)
         degree_max = max(degree_values)
         colormap = plt.cm.get_cmap('coolwarm', degree_max - degree_min + 1)
-
-        # Normalize degrees to the colormap range
         node_colors = [colormap(degree - degree_min) for degree in degree_values]
 
-        # Use the spring_layout algorithm to position nodes
-        pos = nx.spring_layout(subgraph, seed=42)
-
-        # Get labels for nodes in the subgraph
-        #labels = {node: node for node in subgraph.nodes()}
-        labels = {node: root_label if node == root_video_id else node for node in subgraph.nodes()}
-
-
-        # Draw the subgraph with nodes colored by degree
-        plt.figure(figsize=(8, 8))
-        nx.draw(
-            subgraph, pos, labels=labels, with_labels=labels_show, node_size=node_size,
-            node_color=node_colors, cmap=colormap, vmin=degree_min, vmax=degree_max
-        )
+        # Create figure and axes
+        fig, ax = plt.subplots(figsize=(8, 8))
+        nx.draw(subgraph, pos, ax=ax, labels={node: root_label if node == root_video_id else node for node in subgraph.nodes()},
+                with_labels=labels_show, node_size=node_size, node_color=node_colors, cmap=colormap, vmin=degree_min, vmax=degree_max)
         plt.title(f"Subgraph centered around {root_video_id} (Radius {radius})")
 
-        # Create a ScalarMappable to associate with the colorbar
+        # Create a ScalarMappable and associate it with the colorbar
         sm = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=degree_min, vmax=degree_max))
-        sm.set_array([])  # You can set an empty array here
-        # Add colorbar
-        cbar = plt.colorbar(sm, label="Node Degree")
-        plt.title(f"Subgraph centered around {root_video_id} (Radius {radius})")
+        sm.set_array([])
+        cbar = plt.colorbar(sm, ax=ax, label="Node Degree")  # Pass the Axes object here
         plt.show()
 
-    def find_far_away_nodes(graph, starting_node, distance_threshold):
+    def find_far_away_nodes(self, starting_node, distance_threshold):
         far_away_nodes = set()
         visited_nodes = set()
-        queue = [(starting_node, 0)]  # Initialize the queue with the starting node and its distance
+        paths = {}  # Store paths to far-away nodes
+        queue = [(starting_node, 0, [starting_node])]  # Initialize the queue with the starting node, its distance, and the path
 
         while queue:
-            node, distance = queue.pop(0)
+            node, distance, path = queue.pop(0)
             visited_nodes.add(node)
 
             if distance > distance_threshold:
                 far_away_nodes.add(node)
+                paths[node] = path  # Store the path
 
             if distance <= distance_threshold:
-                neighbors = graph.neighbors(node)
+                neighbors = list(self.G.neighbors(node))
                 for neighbor in neighbors:
                     if neighbor not in visited_nodes:
-                        queue.append((neighbor, distance + 1))
+                        queue.append((neighbor, distance + 1, path + [neighbor]))
 
-        return far_away_nodes
+        return far_away_nodes, paths
     
+    def visualize_far_away_nodes(self, starting_node, distance_threshold):
+        far_away_nodes, paths = self.find_far_away_nodes(starting_node, distance_threshold)
+        print(far_away_nodes)
+        subgraph_nodes = set()
+        for path in paths.values():
+            subgraph_nodes.update(path)
+        subgraph = self.G.subgraph(subgraph_nodes)
+
+        pos = nx.spring_layout(subgraph, seed=42)
+        plt.figure(figsize=(12, 12))
+
+        # Draw the whole subgraph in a light color
+        nx.draw(subgraph, pos, node_color='lightblue', with_labels=True, node_size=50)
+
+        # Highlight the far-away nodes and the paths leading to them
+        for node in far_away_nodes:
+            path = paths[node]
+            nx.draw_networkx_nodes(subgraph, pos, nodelist=path, node_color='red', node_size=100)
+            nx.draw_networkx_edges(subgraph, pos, edgelist=nx.edges(subgraph, nbunch=path), edge_color='red', width=2)
+
+        plt.title(f"Nodes Far Away from {starting_node} (Distance Threshold: {distance_threshold})")
+        plt.show()
+        
     def degree_distribution(self):
         degrees = [d for n, d in self.G.degree()]
         plt.figure(figsize=(8, 6))
@@ -172,26 +172,15 @@ class Graph:
 graph = Graph(df = pd.read_csv("Data/0.txt", sep="\t", header=None))
 
 
-#graph.show_subgraph()
+graph.show_subgraph()
 
-graph.find_far_away_nodes(graph.G, starting_node='C0f2dHJ6A18', distance_threshold = 10)
+#graph.find_far_away_nodes(starting_node='C0f2dHJ6A18',distance_threshold = 10)
 
-
-graph.visualize_neighbors(node='C0f2dHJ6A18')
+graph.visualize_far_away_nodes(starting_node='C0f2dHJ6A18', distance_threshold=0)
+#graph.visualize_neighbors(node='C0f2dHJ6A18')
 
 graph.visualize_shortest_path()
 
 
 
 #graph.show_subgraph()
-
-
-
-
-
-
-
-
-
-
-
