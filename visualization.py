@@ -36,51 +36,26 @@ class Graph:
         plt.show()
 
 
-    def show_subgraph(self, root_video_id = 'C0f2dHJ6A18',root_label='Root', labels_show = True, undirected = True, node_size = 100, radius = 3):
-
-        radius = radius
+    def show_subgraph(self, root_video_id='C0f2dHJ6A18', root_label='Root', labels_show=True, undirected=True, node_size=100, radius=3):
         subgraph = nx.ego_graph(self.G, root_video_id, radius=radius, undirected=undirected)
-
-        # Use the spring_layout algorithm to position nodes
         pos = nx.spring_layout(self.G, seed=42)
-
-        # Calculate the degrees of each node in the subgraph
         node_degrees = dict(subgraph.degree)
-
-
-        # Your code to generate the subgraph and calculate node degrees
-
-        # Create a colormap based on node degrees
         degree_values = list(node_degrees.values())
         degree_min = min(degree_values)
         degree_max = max(degree_values)
         colormap = plt.cm.get_cmap('coolwarm', degree_max - degree_min + 1)
-
-        # Normalize degrees to the colormap range
         node_colors = [colormap(degree - degree_min) for degree in degree_values]
 
-        # Use the spring_layout algorithm to position nodes
-        pos = nx.spring_layout(subgraph, seed=42)
-
-        # Get labels for nodes in the subgraph
-        #labels = {node: node for node in subgraph.nodes()}
-        labels = {node: root_label if node == root_video_id else node for node in subgraph.nodes()}
-
-
-        # Draw the subgraph with nodes colored by degree
-        plt.figure(figsize=(8, 8))
-        nx.draw(
-            subgraph, pos, labels=labels, with_labels=labels_show, node_size=node_size,
-            node_color=node_colors, cmap=colormap, vmin=degree_min, vmax=degree_max
-        )
+        # Create figure and axes
+        fig, ax = plt.subplots(figsize=(8, 8))
+        nx.draw(subgraph, pos, ax=ax, labels={node: root_label if node == root_video_id else node for node in subgraph.nodes()},
+                with_labels=labels_show, node_size=node_size, node_color=node_colors, cmap=colormap, vmin=degree_min, vmax=degree_max)
         plt.title(f"Subgraph centered around {root_video_id} (Radius {radius})")
 
-        # Create a ScalarMappable to associate with the colorbar
+        # Create a ScalarMappable and associate it with the colorbar
         sm = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=degree_min, vmax=degree_max))
-        sm.set_array([])  # You can set an empty array here
-        # Add colorbar
-        cbar = plt.colorbar(sm, label="Node Degree")
-        plt.title(f"Subgraph centered around {root_video_id} (Radius {radius})")
+        sm.set_array([])
+        cbar = plt.colorbar(sm, ax=ax, label="Node Degree")  # Pass the Axes object here
         plt.show()
 
     def find_far_away_nodes(self, starting_node, distance_threshold):
@@ -197,11 +172,11 @@ class Graph:
 graph = Graph(df = pd.read_csv("Data/0.txt", sep="\t", header=None))
 
 
-graph.show_graph()
+graph.show_subgraph()
 
 #graph.find_far_away_nodes(starting_node='C0f2dHJ6A18',distance_threshold = 10)
 
-graph.visualize_far_away_nodes(starting_node='C0f2dHJ6A18', distance_threshold=1)
+graph.visualize_far_away_nodes(starting_node='C0f2dHJ6A18', distance_threshold=0)
 #graph.visualize_neighbors(node='C0f2dHJ6A18')
 
 graph.visualize_shortest_path()
@@ -209,14 +184,3 @@ graph.visualize_shortest_path()
 
 
 #graph.show_subgraph()
-
-
-
-
-
-
-
-
-
-
-
