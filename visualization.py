@@ -83,26 +83,51 @@ class Graph:
         plt.title(f"Subgraph centered around {root_video_id} (Radius {radius})")
         plt.show()
 
-    def find_far_away_nodes(graph, starting_node, distance_threshold):
+    def find_far_away_nodes(self, starting_node, distance_threshold):
         far_away_nodes = set()
         visited_nodes = set()
-        queue = [(starting_node, 0)]  # Initialize the queue with the starting node and its distance
+        paths = {}  # Store paths to far-away nodes
+        queue = [(starting_node, 0, [starting_node])]  # Initialize the queue with the starting node, its distance, and the path
 
         while queue:
-            node, distance = queue.pop(0)
+            node, distance, path = queue.pop(0)
             visited_nodes.add(node)
 
             if distance > distance_threshold:
                 far_away_nodes.add(node)
+                paths[node] = path  # Store the path
 
             if distance <= distance_threshold:
-                neighbors = graph.neighbors(node)
+                neighbors = list(self.G.neighbors(node))
                 for neighbor in neighbors:
                     if neighbor not in visited_nodes:
-                        queue.append((neighbor, distance + 1))
+                        queue.append((neighbor, distance + 1, path + [neighbor]))
 
-        return far_away_nodes
+        return far_away_nodes, paths
     
+    def visualize_far_away_nodes(self, starting_node, distance_threshold):
+        far_away_nodes, paths = self.find_far_away_nodes(starting_node, distance_threshold)
+        print(far_away_nodes)
+        subgraph_nodes = set()
+        for path in paths.values():
+            subgraph_nodes.update(path)
+        subgraph = self.G.subgraph(subgraph_nodes)
+
+        pos = nx.spring_layout(subgraph, seed=42)
+        plt.figure(figsize=(12, 12))
+
+        # Draw the whole subgraph in a light color
+        nx.draw(subgraph, pos, node_color='lightblue', with_labels=True, node_size=50)
+
+        # Highlight the far-away nodes and the paths leading to them
+        for node in far_away_nodes:
+            path = paths[node]
+            nx.draw_networkx_nodes(subgraph, pos, nodelist=path, node_color='red', node_size=100)
+            nx.draw_networkx_edges(subgraph, pos, edgelist=nx.edges(subgraph, nbunch=path), edge_color='red', width=2)
+
+        plt.title(f"Nodes Far Away from {starting_node} (Distance Threshold: {distance_threshold})")
+        plt.show()
+        
     def degree_distribution(self):
         degrees = [d for n, d in self.G.degree()]
         plt.figure(figsize=(8, 6))
@@ -172,12 +197,12 @@ class Graph:
 graph = Graph(df = pd.read_csv("Data/0.txt", sep="\t", header=None))
 
 
-#graph.show_subgraph()
+graph.show_graph()
 
-graph.find_far_away_nodes(graph.G, starting_node='C0f2dHJ6A18', distance_threshold = 10)
+#graph.find_far_away_nodes(starting_node='C0f2dHJ6A18',distance_threshold = 10)
 
-
-graph.visualize_neighbors(node='C0f2dHJ6A18')
+graph.visualize_far_away_nodes(starting_node='C0f2dHJ6A18', distance_threshold=1)
+#graph.visualize_neighbors(node='C0f2dHJ6A18')
 
 graph.visualize_shortest_path()
 
