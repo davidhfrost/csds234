@@ -49,8 +49,7 @@ class Engine:
             print(result)
 
     def community_search(self, conditions):
-        category_condition = conditions[0]
-        query = f"SELECT * FROM my_table WHERE my_table.category = 'Comedy'"
+        query = f"SELECT * FROM my_table WHERE {conditions}"
         self.cursor.execute(query)
         community_results = self.cursor.fetchall()
         return community_results
