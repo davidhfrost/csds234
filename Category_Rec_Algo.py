@@ -28,7 +28,7 @@ class EnhanceEngine:
         node_sizes = [degrees[node] * 100 for node in self.graph.nodes()]
 
         plt.figure(figsize=(12, 12))
-        nx.draw(self.graph, with_labels=False, node_size=node_sizes, node_color="blue", alpha=0.5, arrows=True)
+        nx.draw(self.graph, with_labels=True, node_size=node_sizes, node_color="blue", alpha=0.5, arrows=True)
         plt.title("Comment Network with Node Sizes Reflecting Degrees")
         plt.show()
 
@@ -49,7 +49,7 @@ class EnhanceEngine:
         node_colors = ['red' if node in top_category_videos['video ID'].values else 'blue' for node in G.nodes()]
         node_sizes = [700 if node in top_category_videos['video ID'].values else 100 for node in G.nodes()]
 
-        nx.draw(G, with_labels=False, node_size=node_sizes, node_color=node_colors, alpha=0.7, arrows=True)
+        nx.draw(G, with_labels=True, node_size=node_sizes, node_color=node_colors, alpha=0.7, arrows=True)
         plt.title(f"Recommendation Network with Top Rated {category} Videos")
         plt.show()
 
@@ -57,7 +57,7 @@ class EnhanceEngine:
 if __name__ == "__main__":
     engine = EnhanceEngine("Data/0.txt")
     engine.construct_graph()
-    engine.visualize_network()
+    #engine.visualize_network()
 
     # Visualize top-rated videos in the 'Comedy' category
     engine.visualize_top_rated_recommendations('Comedy')
