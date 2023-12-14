@@ -85,6 +85,17 @@ class Engine:
                             aggregated_graph.add_edge(attribute, v)
 
         return aggregated_graph
+    #Test 1: Multi-Condition Query: A query that combines multiple conditions across different columns. 
+    def complex_query_1(self):
+        conditions = ["category = 'Music'", "views > 5000", "rate > 4.0", "age < 365"]
+        query = f"SELECT * FROM my_table WHERE {' AND '.join(conditions)}"
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+    #Test 2: Aggregation and Grouping Query: An aggregation query that groups data by a specific column and performs some aggregation function, like counting or averaging, on another column. 
+    def complex_query_2(self):
+        query = "SELECT category, AVG(length) as average_length, SUM(comments) as total_comments FROM my_table GROUP BY category"
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
 
     def performance_comparison(self):
         # Define test conditions 1 
@@ -103,10 +114,13 @@ class Engine:
         # Measure the execution time for community_search
         time_community_search = timeit.timeit(lambda: self.community_search(community_conditions), number=100)
         print(f"Community Search Execution Time: {time_community_search} seconds")
+        
+        time_complex_query_1 = timeit.timeit(lambda: self.complex_query_1(), number=100)
+        time_complex_query_2 = timeit.timeit(lambda: self.complex_query_2(), number=100)
 
         # Plot the performance comparison
-        labels = ['Entity Search', 'Ranged Query', 'Community Search']
-        execution_times = [time_entity_search, time_ranged_query, time_community_search]
+        labels = ['Entity Search', 'Ranged Query', 'Community Search', 'Complex Query 1', 'Complex Query 2']
+        execution_times = [time_entity_search, time_ranged_query, time_community_search, time_complex_query_1, time_complex_query_2]
 
         plt.bar(labels, execution_times)
         plt.xlabel('Search Methods')
