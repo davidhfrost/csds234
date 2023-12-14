@@ -91,9 +91,26 @@ class Engine:
         query = f"SELECT * FROM my_table WHERE {' AND '.join(conditions)}"
         self.cursor.execute(query)
         return self.cursor.fetchall()
+    
     #Test 2: Aggregation and Grouping Query: An aggregation query that groups data by a specific column and performs some aggregation function, like counting or averaging, on another column. 
     def complex_query_2(self):
         query = "SELECT category, AVG(length) as average_length, SUM(comments) as total_comments FROM my_table GROUP BY category"
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+
+    #Test 3: Multi-Join and Subquery with Aggregation: create a multi-join operation that aggregates data across different dimensions and involves a subquery
+    def complex_query_3(self):
+        subquery = """
+            SELECT v1."video ID" FROM my_table v1
+            INNER JOIN my_table v2 ON v1."video ID" = v2."Related IDs"
+            WHERE v1.category = v2.category AND v2.views > v1.views
+        """
+        query = f"""
+            SELECT category, AVG(views) as average_views, AVG(rate) as average_rate
+            FROM my_table
+            WHERE "video ID" IN ({subquery})
+            GROUP BY category
+        """
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
@@ -117,10 +134,11 @@ class Engine:
         
         time_complex_query_1 = timeit.timeit(lambda: self.complex_query_1(), number=100)
         time_complex_query_2 = timeit.timeit(lambda: self.complex_query_2(), number=100)
+        time_complex_query_3 = timeit.timeit(lambda: self.complex_query_3(), number=100)
 
         # Plot the performance comparison
-        labels = ['Entity Search', 'Ranged Query', 'Community Search', 'Complex Query 1', 'Complex Query 2']
-        execution_times = [time_entity_search, time_ranged_query, time_community_search, time_complex_query_1, time_complex_query_2]
+        labels = ['Entity Search', 'Ranged Query', 'Community Search', 'Complex Query 1', 'Complex Query 2','Complex Query 3' ]
+        execution_times = [time_entity_search, time_ranged_query, time_community_search, time_complex_query_1, time_complex_query_2,time_complex_query_3 ]
 
         plt.bar(labels, execution_times)
         plt.xlabel('Search Methods')
