@@ -60,4 +60,5 @@ if __name__ == "__main__":
     #engine.visualize_network()
 
     # Visualize top-rated videos in the 'Comedy' category
+    engine.visualize_top_rated_recommendations('Entertainment')
     engine.visualize_top_rated_recommendations('Comedy')
