@@ -87,24 +87,20 @@ class Engine:
         return aggregated_graph
     
     def approximate_query_processing(self, conditions):
-        # Measure execution time and get results for entity_search
         start_time = timeit.default_timer()
         entity_results = self.entity_search(conditions)
         entity_time = timeit.default_timer() - start_time
 
-        # Measure execution time and get results for community_search
         start_time = timeit.default_timer()
         community_results = self.community_search(conditions)
         community_time = timeit.default_timer() - start_time
 
-        # Compare the number of results
         num_entity_results = len(entity_results)
         num_community_results = len(community_results)
 
         # Calculate result similarity (optional, if you need a measure of accuracy)
         similarity_score = self.calculate_similarity(entity_results, community_results)
 
-        # Print and return the comparison
         print(f"Entity Search - Time: {entity_time} seconds, Results: {num_entity_results}")
         print(f"Community Search - Time: {community_time} seconds, Results: {num_community_results}")
         print(f"Similarity Score: {similarity_score}")
@@ -116,11 +112,9 @@ class Engine:
         }
 
     def calculate_similarity(self, results1, results2):
-        # Convert the list of tuples (results) to set of tuples for easier operations
         set1 = set(results1)
-        set2 = set(results2)
+        set2 = set(results2)# so i only get unique key 
 
-        # Calculate intersection and union
         intersection = set1.intersection(set2)
         union = set1.union(set2)
 
@@ -129,7 +123,7 @@ class Engine:
             return 0
         iou = len(intersection) / len(union)
 
-        return iou
+        return iou # ovrlappting proportion so i can understand if it belogns to each other overlap 
     
     def plot_approximate_query_results(self, conditions):
         # Run approximate query processing
@@ -142,36 +136,28 @@ class Engine:
         community_search_results = approx_results['community_search']['results']
         iou_similarity = approx_results['similarity_score']
 
-        # Data for plotting
         methods = ['Entity Search', 'Community Search']
         times = [entity_search_time, community_search_time]
         results_counts = [entity_search_results, community_search_results]
 
-        # Creating the bar chart
         fig, ax1 = plt.subplots()
 
-        # Bar chart for times
         color = 'tab:blue'
         ax1.set_xlabel('Method')
         ax1.set_ylabel('Execution Time (seconds)', color=color)
         ax1.bar(methods, times, color=color, alpha=0.6)
         ax1.tick_params(axis='y', labelcolor=color)
-
-        # Instantiate a second axes that shares the same x-axis
         ax2 = ax1.twinx()  
 
-        # Bar chart for result counts
         color = 'tab:red'
         ax2.set_ylabel('Number of Results', color=color)  
         ax2.bar(methods, results_counts, color=color, alpha=0.6)
         ax2.tick_params(axis='y', labelcolor=color)
 
-        # Adding the IoU similarity as text in the plot
         plt.title('Query Performance and Result Comparison')
         plt.text(1, max(results_counts)/2, f'IoU Similarity: {iou_similarity:.2f}', 
                  horizontalalignment='center', color='green', fontsize=12)
 
-        # Show the plot
         plt.tight_layout()
         plt.show()
     
